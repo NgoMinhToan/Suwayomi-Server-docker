@@ -52,9 +52,10 @@ jobs:
       - name: Get latest release metadata
         id: get_latest_release_metadata
         run: |
-          curl -s https://api.github.com/repos/${{ env.server_owner }}/${{ env.server_repo }}/releases/latest > ${{ runner.temp }}/latest_release.json
-          release_url=$(jq -r '.assets[] | select(.content_type == "application/java-archive") | .browser_download_url' ${{ runner.temp }}/latest_release.json)
-          release_tag=$(jq -r '.tag_name' ${{ runner.temp }}/latest_release.json)
+          # Get all releases and take the first one (most recent)
+          curl -s "https://api.github.com/repos/${{ env.server_owner }}/${{ env.server_repo }}/releases?per_page=1" > ${{ runner.temp }}/latest_release.json
+          release_url=$(jq -r '.[0].assets[] | select(.content_type == "application/java-archive") | .browser_download_url' ${{ runner.temp }}/latest_release.json)
+          release_tag=$(jq -r '.[0].tag_name' ${{ runner.temp }}/latest_release.json)
           release_filename=$(basename $release_url)
           tachidesk_docker_git_commit=$(git rev-list --count HEAD)
           build_date=$(date "+%F")
