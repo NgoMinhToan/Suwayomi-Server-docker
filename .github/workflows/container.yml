@@ -221,8 +221,6 @@ jobs:
             TACHIDESK_KCEF_RELEASE_URL=https://api.github.com/repos/JetBrains/JetBrainsRuntime/releases/latest
             TACHIDESK_ABORT_HANDLER_DOWNLOAD_URL=https://raw.githubusercontent.com/Suwayomi/Suwayomi-Server/refs/heads/master/scripts/resources/catch_abort.c
           tags: |
-            ghcr.io/${{ github.repository_owner }}/tachidesk:${{ inputs.tachidesk_release_type }}
-            ghcr.io/${{ github.repository_owner }}/tachidesk:${{ steps.get_latest_release_metadata.outputs.release_tag }}
             ghcr.io/${{ github.repository_owner }}/suwayomi-server:${{ inputs.tachidesk_release_type }}
             ghcr.io/${{ github.repository_owner }}/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}
             ghcr.io/${{ github.repository_owner }}/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}-${{ inputs.tachidesk_release_type }}
