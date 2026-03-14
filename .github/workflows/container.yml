@@ -219,7 +219,7 @@ jobs:
             TACHIDESK_DOCKER_GIT_COMMIT=${{ steps.get_latest_release_metadata.outputs.tachidesk_docker_git_commit }}
             TACHIDESK_KCEF=
             TACHIDESK_KCEF_RELEASE_URL=https://api.github.com/repos/JetBrains/JetBrainsRuntime/releases/latest
-            TACHIDESK_ABORT_HANDLER_DOWNLOAD_URL=https://raw.githubusercontent.com/Suwayomi/Suwayomi-Server/refs/heads/master/scripts/resources/catch_abort.c
+            TACHIDESK_ABORT_HANDLER_DOWNLOAD_URL=https://raw.githubusercontent.com/NgoMinhToan/Suwayomi-Server/refs/heads/feat/download-metadata-cover/scripts/resources/catch_abort.c
           tags: |
             ghcr.io/ngominhtoan/suwayomi-server:${{ inputs.tachidesk_release_type }}
             ghcr.io/ngominhtoan/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}
