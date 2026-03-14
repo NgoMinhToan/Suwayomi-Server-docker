@@ -221,11 +221,11 @@ jobs:
             TACHIDESK_KCEF_RELEASE_URL=https://api.github.com/repos/JetBrains/JetBrainsRuntime/releases/latest
             TACHIDESK_ABORT_HANDLER_DOWNLOAD_URL=https://raw.githubusercontent.com/Suwayomi/Suwayomi-Server/refs/heads/master/scripts/resources/catch_abort.c
           tags: |
-            ghcr.io/${{ github.repository_owner }}/suwayomi-server:${{ inputs.tachidesk_release_type }}
-            ghcr.io/${{ github.repository_owner }}/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}
-            ghcr.io/${{ github.repository_owner }}/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}-${{ inputs.tachidesk_release_type }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/suwayomi-server:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/suwayomi-server:buildcache,mode=max
+            ghcr.io/ngominhtoan/suwayomi-server:${{ inputs.tachidesk_release_type }}
+            ghcr.io/ngominhtoan/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}
+            ghcr.io/ngominhtoan/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}-${{ inputs.tachidesk_release_type }}
+          cache-from: type=registry,ref=ghcr.io/ngominhtoan/suwayomi-server:buildcache
+          cache-to: type=registry,ref=ghcr.io/ngominhtoan/suwayomi-server:buildcache,mode=max
 
       # - name: Create slim container
       #   uses: kitabisa/docker-slim-action@v1
@@ -247,12 +247,12 @@ jobs:
       - name: Send a Discord message through the webhook (preview build)
         if: inputs.do_upload && inputs.tachidesk_release_type == 'preview'
         run: |
-          curl -H "Content-Type: application/json" -d '{"content": "Docker Preview Image Published!","embeds":[{"color":16729344,"author":{"name":"${{ github.repository_owner }}","icon_url":"https://avatars.githubusercontent.com/u/81182076","url":"https://github.com/${{ github.repository_owner }}"},"title":"Docker Preview Release","url":"https://github.com/${{ github.repository_owner }}/Suwayomi-Server-docker","fields":[{"name":"docker update","value":"docker pull ghcr.io/${{ github.repository_owner }}/suwayomi-server:preview","inline":false},{"name":"docker run","value":"docker run -p 4567:4567 ghcr.io/${{ github.repository_owner }}/suwayomi-server:preview","inline":false}],"thumbnail":{"url": "https://www.docker.com/sites/default/files/d8/2019-07/vertical-logo-monochromatic.png"},"description":"Suwayomi-Server version - ${{ steps.get_latest_release_metadata.outputs.release_tag }}"}]}' "https://discord.com/api/webhooks/${{ secrets.DISCORD_TACHIDESK_WEBHOOK_ID }}/${{ secrets.DISCORD_TACHIDESK_TOKEN }}"
+          curl -H "Content-Type: application/json" -d '{"content": "Docker Preview Image Published!","embeds":[{"color":16729344,"author":{"name":"${{ github.repository_owner }}","icon_url":"https://avatars.githubusercontent.com/u/81182076","url":"https://github.com/${{ github.repository_owner }}"},"title":"Docker Preview Release","url":"https://github.com/${{ github.repository_owner }}/Suwayomi-Server-docker","fields":[{"name":"docker update","value":"docker pull ghcr.io/ngominhtoan/suwayomi-server:preview","inline":false},{"name":"docker run","value":"docker run -p 4567:4567 ghcr.io/ngominhtoan/suwayomi-server:preview","inline":false}],"thumbnail":{"url": "https://www.docker.com/sites/default/files/d8/2019-07/vertical-logo-monochromatic.png"},"description":"Suwayomi-Server version - ${{ steps.get_latest_release_metadata.outputs.release_tag }}"}]}' "https://discord.com/api/webhooks/${{ secrets.DISCORD_TACHIDESK_WEBHOOK_ID }}/${{ secrets.DISCORD_TACHIDESK_TOKEN }}"
 
       - name: Send a Discord message through the webhook (stable build)
         if: inputs.do_upload && inputs.tachidesk_release_type == 'stable'
         run: |
-          curl -H "Content-Type: application/json" -d '{"content": "Docker Stable Image Published!","embeds":[{"color":5409028,"author":{"name":"${{ github.repository_owner }}","icon_url":"https://avatars.githubusercontent.com/u/81182076","url":"https://github.com/${{ github.repository_owner }}"},"title":"Docker Stable Release","url":"https://github.com/${{ github.repository_owner }}/Suwayomi-Server-docker","fields":[{"name":"docker update","value":"docker pull ghcr.io/${{ github.repository_owner }}/suwayomi-server:stable","inline":false},{"name":"docker run","value":"docker run -p 4567:4567 ghcr.io/${{ github.repository_owner }}/suwayomi-server","inline":false}],"thumbnail":{"url": "https://www.docker.com/sites/default/files/d8/2019-07/vertical-logo-monochromatic.png"},"description":"Suwayomi-Server version - ${{ steps.get_latest_release_metadata.outputs.release_tag }}"}]}' "https://discord.com/api/webhooks/${{ secrets.DISCORD_TACHIDESK_WEBHOOK_ID }}/${{ secrets.DISCORD_TACHIDESK_TOKEN }}"
+          curl -H "Content-Type: application/json" -d '{"content": "Docker Stable Image Published!","embeds":[{"color":5409028,"author":{"name":"${{ github.repository_owner }}","icon_url":"https://avatars.githubusercontent.com/u/81182076","url":"https://github.com/${{ github.repository_owner }}"},"title":"Docker Stable Release","url":"https://github.com/${{ github.repository_owner }}/Suwayomi-Server-docker","fields":[{"name":"docker update","value":"docker pull ghcr.io/ngominhtoan/suwayomi-server:stable","inline":false},{"name":"docker run","value":"docker run -p 4567:4567 ghcr.io/ngominhtoan/suwayomi-server","inline":false}],"thumbnail":{"url": "https://www.docker.com/sites/default/files/d8/2019-07/vertical-logo-monochromatic.png"},"description":"Suwayomi-Server version - ${{ steps.get_latest_release_metadata.outputs.release_tag }}"}]}' "https://discord.com/api/webhooks/${{ secrets.DISCORD_TACHIDESK_WEBHOOK_ID }}/${{ secrets.DISCORD_TACHIDESK_TOKEN }}"
 
       - name: Save tag (stable build)
         if: inputs.do_upload && inputs.tachidesk_release_type == 'stable'
