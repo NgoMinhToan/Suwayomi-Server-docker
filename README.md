@@ -22,6 +22,10 @@ By default, docker stores logs indefinitely, you can [set up logging globally](h
 
 Use the template [docker-compose.yml](./docker-compose.yml) in this repo for creating and starting tachidesk docker container.
 
+### Podman Quadlet
+
+Use the template [suwayomi-server.container](./suwayomi-server.container) in this repo for creating and starting Suwayomi as a rootless Podman container.
+
 # Environment Variables
 
 > [!CAUTION]
@@ -29,6 +33,9 @@ Use the template [docker-compose.yml](./docker-compose.yml) in this repo for cre
 
 > [!Tip]
 > Most of the time you don't need to use environment variables, instead settings can be changed during runtime via the webUI. (which will be rendered useless when providing an environment variable)
+
+> [!Tip]
+> Passwords can be provided as files, by appending `_FILE` to the variable name. For example, you can set `SOCKS_PROXY_PASSWORD_FILE=/path/to/myfile` to have Suwayomi use the content of "myfile" as socks proxy password.
 
 > [!NOTE]
 > See [server-reference.conf](https://github.com/Suwayomi/Suwayomi-Server/blob/master/server/src/main/resources/server-reference.conf) in the [Suwayomi-Server](https://github.com/Suwayomi/Suwayomi-Server) repository for the default values
