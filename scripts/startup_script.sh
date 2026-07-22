@@ -24,6 +24,9 @@ fi
 if [ -f "${DATABASE_PASSWORD_FILE}" ]; then
     export DATABASE_PASSWORD=$(cat "${DATABSE_PASSWORD_FILE}")
 fi
+if [ -f "${SYNCYOMI_API_KEY_FILE}" ]; then
+    export SYNCYOMI_API_KEY=$(cat "${SYNCYOMI_API_KEY_FILE}")
+fi
 
 
 # Set default values for settings
@@ -68,9 +71,9 @@ if [ -n "$SERVE_CONVERSIONS" ]; then
     perl -0777 -i -pe 's/server\.serveConversions = ({[^#]*?}}?)/server.serveConversions = $ENV{SERVE_CONVERSIONS}/gs' /home/suwayomi/.local/share/Tachidesk/server.conf
 fi
 
-# extension repos
-if [ -n "$EXTENSION_REPOS" ]; then
-    perl -0777 -i -pe 's/server\.extensionRepos = (\[.*?\])/server.extensionRepos = $ENV{EXTENSION_REPOS}/gs' /home/suwayomi/.local/share/Tachidesk/server.conf
+# extension stores
+if [ -n "$EXTENSION_STORES" ]; then
+    perl -0777 -i -pe 's/server\.extensionStores = (\[.*?\])/server.extensionStores = $ENV{EXTENSION_STORES}/gs' /home/suwayomi/.local/share/Tachidesk/server.conf
 fi
 
 # requests
@@ -134,6 +137,7 @@ sed -i -r "s/server.opdsShowOnlyUnreadChapters = ([0-9]+|[a-zA-Z]+)( #)?/server.
 sed -i -r "s/server.opdsShowOnlyDownloadedChapters = ([0-9]+|[a-zA-Z]+)( #)?/server.opdsShowOnlyDownloadedChapters = ${OPDS_SHOW_ONLY_DOWNLOADED_CHAPTERS:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
 sed -i -r "s/server.opdsChapterSortOrder = \"*([a-zA-Z0-9_]+)\"*( #)?/server.opdsChapterSortOrder = ${OPDS_CHAPTER_SORT_ORDER:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
 sed -i -r "s/server.opdsCbzMimetype = \"*([a-zA-Z0-9_]+)\"*( #)?/server.opdsCbzMimetype = ${OPDS_CBZ_MIME_TYPE:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
+sed -i -r "s/server.opdsSkipChapterMetadataFeed = ([0-9]+|[a-zA-Z]+)( #)?/server.opdsSkipChapterMetadataFeed = ${OPDS_SKIP_CHAPTER_METADATA_FEED:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
 
 # koreader
 sed -i -r "s/server.koreaderSyncChecksumMethod = \"*([a-zA-Z0-9_]+)\"*( #)?/server.koreaderSyncChecksumMethod = ${KOREADER_SYNC_CHECKSUM_METHOD:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
@@ -148,6 +152,20 @@ sed -i -r "s/server.databaseUsername = \"(.*?)\"( #)?/server.databaseUsername = 
 sed -i -r "s/server.databasePassword = \"(.*?)\"( #)?/server.databasePassword = \"${DATABASE_PASSWORD:-\1}\" #/" /home/suwayomi/.local/share/Tachidesk/server.conf
 sed -i -r "s/server.useHikariConnectionPool = ([0-9]+|[a-zA-Z]+)( #)?/server.useHikariConnectionPool = ${USE_HIKARI_CONNECTION_POOL:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
 
+# webview
+sed -i -r "s/server.kcefEnabled = ([0-9]+|[a-zA-Z]+)( #)?/server.kcefEnabled = ${KCEF_ENABLED:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
+
+# sync
+sed -i -r "s/server.syncYomiEnabled = ([0-9]+|[a-zA-Z]+)( #)?/server.syncYomiEnabled = ${SYNCYOMI_ENABLED:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
+sed -i -r "s|server.syncYomiHost = \"(.*?)\"( #)?|server.syncYomiHost = \"${SYNCYOMI_HOST:-\1}\" #|" /home/suwayomi/.local/share/Tachidesk/server.conf
+sed -i -r "s|server.syncYomiApiKey = \"(.*?)\"( #)?|server.syncYomiApiKey = \"${SYNCYOMI_API_KEY:-\1}\" #|" /home/suwayomi/.local/share/Tachidesk/server.conf
+sed -i -r "s/server.syncDataManga = ([0-9]+|[a-zA-Z]+)( #)?/server.syncDataManga = ${SYNC_DATA_MANGA:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
+sed -i -r "s/server.syncDataChapters = ([0-9]+|[a-zA-Z]+)( #)?/server.syncDataChapters = ${SYNC_DATA_CHAPTERS:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
+sed -i -r "s/server.syncDataTracking = ([0-9]+|[a-zA-Z]+)( #)?/server.syncDataTracking = ${SYNC_DATA_TRACKING:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
+sed -i -r "s/server.syncDataHistory = ([0-9]+|[a-zA-Z]+)( #)?/server.syncDataHistory = ${SYNC_DATA_HISTORY:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
+sed -i -r "s/server.syncDataCategories = ([0-9]+|[a-zA-Z]+)( #)?/server.syncDataCategories = ${SYNC_DATA_CATEGORIES:-\1} #/" /home/suwayomi/.local/share/Tachidesk/server.conf
+sed -i -r "s/server.syncInterval = \"(.*?)\"( #)?/server.syncInterval = \"${SYNC_INTERVAL:-\1}\" #/" /home/suwayomi/.local/share/Tachidesk/server.conf
+
 rm -rf /home/suwayomi/.local/share/Tachidesk/cache/kcef/Singleton*
 
 if command -v Xvfb >/dev/null; then
@@ -158,6 +176,7 @@ if command -v Xvfb >/dev/null; then
       mkdir -p /home/suwayomi/.local/share/Tachidesk/bin
     fi
     if [ ! -d /home/suwayomi/.local/share/Tachidesk/bin/kcef ] && [ ! -L /home/suwayomi/.local/share/Tachidesk/bin/kcef ]; then
+      rm -rf /home/suwayomi/.local/share/Tachidesk/bin/kcef
       ln -s /opt/kcef/jcef /home/suwayomi/.local/share/Tachidesk/bin/kcef
     fi
   fi
