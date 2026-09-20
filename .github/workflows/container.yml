@@ -20,7 +20,8 @@ on:
         required: false
 
 env:
-  server_repo: ${{ inputs.tachidesk_release_type == 'stable' && 'Suwayomi-Server' || 'Suwayomi-Server-preview' }}
+  server_owner: ${{ inputs.tachidesk_release_type == 'stable' && 'suwayomi' || 'NgoMinhToan' }}
+  server_repo: Suwayomi-Server
   test_image_tag: ghcr.io/suwayomi/suwayomi-server-test:testing
   this_actions_run_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
@@ -51,9 +52,10 @@ jobs:
       - name: Get latest release metadata
         id: get_latest_release_metadata
         run: |
-          curl -s https://api.github.com/repos/suwayomi/${{ env.server_repo }}/releases/latest > ${{ runner.temp }}/latest_release.json
-          release_url=$(jq -r '.assets[] | select(.content_type == "application/java-archive") | .browser_download_url' ${{ runner.temp }}/latest_release.json)
-          release_tag=$(jq -r '.tag_name' ${{ runner.temp }}/latest_release.json)
+          # Get all releases and take the first one (most recent)
+          curl -s "https://api.github.com/repos/${{ env.server_owner }}/${{ env.server_repo }}/releases?per_page=1" > ${{ runner.temp }}/latest_release.json
+          release_url=$(jq -r '.[0].assets[] | select(.content_type == "application/java-archive") | .browser_download_url' ${{ runner.temp }}/latest_release.json)
+          release_tag=$(jq -r '.[0].tag_name' ${{ runner.temp }}/latest_release.json)
           release_filename=$(basename $release_url)
           tachidesk_docker_git_commit=$(git rev-list --count HEAD)
           build_date=$(date "+%F")
@@ -239,17 +241,13 @@ jobs:
             TACHIDESK_DOCKER_GIT_COMMIT=${{ steps.get_latest_release_metadata.outputs.tachidesk_docker_git_commit }}
             TACHIDESK_KCEF=
             TACHIDESK_KCEF_RELEASE_URL=https://api.github.com/repos/JetBrains/JetBrainsRuntime/releases/tags/${{ steps.get_latest_release_metadata.outputs.jbr_release_tag }}
-            TACHIDESK_ABORT_HANDLER_DOWNLOAD_URL=https://raw.githubusercontent.com/Suwayomi/Suwayomi-Server/refs/heads/master/scripts/resources/catch_abort.c
+            TACHIDESK_ABORT_HANDLER_DOWNLOAD_URL=https://raw.githubusercontent.com/NgoMinhToan/Suwayomi-Server/refs/heads/master/scripts/resources/catch_abort.c
           tags: |
-            ${{ inputs.tachidesk_release_type == 'stable' && 'ghcr.io/suwayomi/tachidesk:latest' || '' }}
-            ghcr.io/suwayomi/tachidesk:${{ inputs.tachidesk_release_type }}
-            ghcr.io/suwayomi/tachidesk:${{ steps.get_latest_release_metadata.outputs.release_tag }}
-            ${{ inputs.tachidesk_release_type == 'stable' && 'ghcr.io/suwayomi/suwayomi-server:latest' || '' }}
-            ghcr.io/suwayomi/suwayomi-server:${{ inputs.tachidesk_release_type }}
-            ghcr.io/suwayomi/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}
-            ghcr.io/suwayomi/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}-${{ inputs.tachidesk_release_type }}
-          cache-from: type=registry,ref=ghcr.io/suwayomi/suwayomi-server:buildcache
-          cache-to: type=registry,ref=ghcr.io/suwayomi/suwayomi-server:buildcache,mode=max
+            ghcr.io/ngominhtoan/suwayomi-server:${{ inputs.tachidesk_release_type }}
+            ghcr.io/ngominhtoan/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}
+            ghcr.io/ngominhtoan/suwayomi-server:${{ steps.get_latest_release_metadata.outputs.release_tag }}-${{ inputs.tachidesk_release_type }}
+          cache-from: type=registry,ref=ghcr.io/ngominhtoan/suwayomi-server:buildcache
+          cache-to: type=registry,ref=ghcr.io/ngominhtoan/suwayomi-server:buildcache,mode=max
 
       # - name: Create slim container
       #   uses: kitabisa/docker-slim-action@v1
@@ -271,12 +269,12 @@ jobs:
       - name: Send a Discord message through the webhook (preview build)
         if: inputs.do_upload && inputs.tachidesk_release_type == 'preview'
         run: |
-          curl -H "Content-Type: application/json" -d '{"content": "Docker Preview Image Published!","embeds":[{"color":16729344,"author":{"name":"${{ github.repository_owner }}","icon_url":"https://avatars.githubusercontent.com/u/81182076","url":"https://github.com/${{ github.repository_owner }}"},"title":"Docker Preview Release","url":"https://github.com/${{ github.repository_owner }}/Suwayomi-Server-docker","fields":[{"name":"docker update","value":"docker pull ghcr.io/suwayomi/suwayomi-server:preview","inline":false},{"name":"docker run","value":"docker run -p 4567:4567 ghcr.io/suwayomi/suwayomi-server:preview","inline":false}],"thumbnail":{"url": "https://www.docker.com/sites/default/files/d8/2019-07/vertical-logo-monochromatic.png"},"description":"Suwayomi-Server version - ${{ steps.get_latest_release_metadata.outputs.release_tag }}"}]}' "https://discord.com/api/webhooks/${{ secrets.DISCORD_TACHIDESK_WEBHOOK_ID }}/${{ secrets.DISCORD_TACHIDESK_TOKEN }}"
+          curl -H "Content-Type: application/json" -d '{"content": "Docker Preview Image Published!","embeds":[{"color":16729344,"author":{"name":"${{ github.repository_owner }}","icon_url":"https://avatars.githubusercontent.com/u/81182076","url":"https://github.com/${{ github.repository_owner }}"},"title":"Docker Preview Release","url":"https://github.com/${{ github.repository_owner }}/Suwayomi-Server-docker","fields":[{"name":"docker update","value":"docker pull ghcr.io/ngominhtoan/suwayomi-server:preview","inline":false},{"name":"docker run","value":"docker run -p 4567:4567 ghcr.io/ngominhtoan/suwayomi-server:preview","inline":false}],"thumbnail":{"url": "https://www.docker.com/sites/default/files/d8/2019-07/vertical-logo-monochromatic.png"},"description":"Suwayomi-Server version - ${{ steps.get_latest_release_metadata.outputs.release_tag }}"}]}' "https://discord.com/api/webhooks/${{ secrets.DISCORD_TACHIDESK_WEBHOOK_ID }}/${{ secrets.DISCORD_TACHIDESK_TOKEN }}"
 
       - name: Send a Discord message through the webhook (stable build)
         if: inputs.do_upload && inputs.tachidesk_release_type == 'stable'
         run: |
-          curl -H "Content-Type: application/json" -d '{"content": "Docker Stable Image Published!","embeds":[{"color":5409028,"author":{"name":"${{ github.repository_owner }}","icon_url":"https://avatars.githubusercontent.com/u/81182076","url":"https://github.com/${{ github.repository_owner }}"},"title":"Docker Stable Release","url":"https://github.com/${{ github.repository_owner }}/Suwayomi-Server-docker","fields":[{"name":"docker update","value":"docker pull ghcr.io/suwayomi/suwayomi-server:stable","inline":false},{"name":"docker run","value":"docker run -p 4567:4567 ghcr.io/suwayomi/suwayomi-server","inline":false}],"thumbnail":{"url": "https://www.docker.com/sites/default/files/d8/2019-07/vertical-logo-monochromatic.png"},"description":"Suwayomi-Server version - ${{ steps.get_latest_release_metadata.outputs.release_tag }}"}]}' "https://discord.com/api/webhooks/${{ secrets.DISCORD_TACHIDESK_WEBHOOK_ID }}/${{ secrets.DISCORD_TACHIDESK_TOKEN }}"
+          curl -H "Content-Type: application/json" -d '{"content": "Docker Stable Image Published!","embeds":[{"color":5409028,"author":{"name":"${{ github.repository_owner }}","icon_url":"https://avatars.githubusercontent.com/u/81182076","url":"https://github.com/${{ github.repository_owner }}"},"title":"Docker Stable Release","url":"https://github.com/${{ github.repository_owner }}/Suwayomi-Server-docker","fields":[{"name":"docker update","value":"docker pull ghcr.io/ngominhtoan/suwayomi-server:stable","inline":false},{"name":"docker run","value":"docker run -p 4567:4567 ghcr.io/ngominhtoan/suwayomi-server","inline":false}],"thumbnail":{"url": "https://www.docker.com/sites/default/files/d8/2019-07/vertical-logo-monochromatic.png"},"description":"Suwayomi-Server version - ${{ steps.get_latest_release_metadata.outputs.release_tag }}"}]}' "https://discord.com/api/webhooks/${{ secrets.DISCORD_TACHIDESK_WEBHOOK_ID }}/${{ secrets.DISCORD_TACHIDESK_TOKEN }}"
 
       - name: Save tag (stable build)
         if: inputs.do_upload && inputs.tachidesk_release_type == 'stable'
